@@ -24,6 +24,27 @@ class Network:
         else:
             raise ValueError("Both nodes must exist in the network.")
         
+    def generate(self, num_inputs: int, num_hidden):
+        """
+        Generate a network with a given number of input, hidden, and output nodes.
+        """
+        for i in range(num_inputs):
+            self.add_node(f"input{i+1}", 0)
+        
+        for i in range(num_hidden):
+            self.add_node(f"hidden{i+1}", num_inputs)
+        
+        self.add_node("output", num_hidden)
+
+        # Connect input nodes to hidden nodes
+        for i in range(num_inputs):
+            for j in range(num_hidden):
+                self.add_edge(f"input{i+1}", f"hidden{j+1}")
+
+        # Connect hidden nodes to output nodes
+        for i in range(num_hidden):
+            self.add_edge(f"hidden{i+1}", "output")
+        
     def topological_sort(self):
         visited = set()
         order = []
@@ -91,31 +112,14 @@ class Network:
 
 if __name__ == "__main__":
     # Example usage
+
     network = Network()
-    network.add_node("input1", 0)
-    network.add_node("input2", 0)
-    network.add_node("hidden1", 2)
-    network.add_node("hidden2", 2)
-    #network.add_node("hidden3", 2)
-    #network.add_node("hidden4", 2)
-    network.add_node("output", 2)
-
-    network.add_edge("input1", "hidden1")
-    network.add_edge("input2", "hidden1")
-    network.add_edge("input1", "hidden2")
-    network.add_edge("input2", "hidden2")
-    #network.add_edge("input1", "hidden3")
-    #network.add_edge("input2", "hidden3")
-    #network.add_edge("input1", "hidden4")
-    #network.add_edge("input2", "hidden4")
-    network.add_edge("hidden1", "output")
-    network.add_edge("hidden2", "output")
-    #network.add_edge("hidden3", "output")
-    #network.add_edge("hidden4", "output")
-
+    
+    # Generate the network
+    network.generate(2, 4)
 
     losses = []
-    iterations = 10000
+    iterations = 1000
     learning_rate = 1.0
 
     patterns = [({"input1":0,"input2":0}, {"output":0}), ({"input1":0,"input2":1}, {"output":1}), ({"input1":1,"input2":0}, {"output":1}), ({"input1":1,"input2":1}, {"output":0})]
