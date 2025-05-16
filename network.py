@@ -26,7 +26,7 @@ class Network:
         
     def generate(self, num_inputs: int, num_hidden):
         """
-        Generate a network with a given number of input, hidden, and output nodes.
+        Generate a network with a given number of input and hidden nodes.
         """
         for i in range(num_inputs):
             self.add_node(f"input{i+1}", 0)
