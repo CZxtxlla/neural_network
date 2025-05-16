@@ -121,12 +121,12 @@ if __name__ == "__main__":
     for i in range(iterations):
         # decrease learning rate
         learning_rate *= 0.99999
-        
+
         # train for xor
         inputs = {"input1": np.random.randint(0,2), "input2": np.random.randint(0,2)}
         target = {"output": int(inputs["input1"] != inputs["input2"])}
         outputs = network.forward(inputs)
-        loss = sum((target[node] - outputs[node]) ** 2 for node in target)
+        loss = sum((target[node] - outputs[node]) ** 2 for node in target) # Mean Squared Error loss
         losses.append(loss)
         print(f"Iteration {i+1}/{iterations}, Loss: {loss}, learning_rate: {learning_rate}")
 
