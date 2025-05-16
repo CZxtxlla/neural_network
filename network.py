@@ -6,6 +6,7 @@ class Network:
     def __init__(self):
         self.nodes = {} # Dictionary to hold nodes
         self.edges = {} # Dictionary to hold edges
+        self.last_outputs = {} # To store the last outputs for backpropagation
 
     def add_node(self, node_id: str, num_inputs: int):
         """
@@ -37,9 +38,15 @@ class Network:
 
         for node in self.nodes:
             dfs(node)
-
-
+        
         return list(order)
+
+
+    def sigmoid_derivative(self, x: float) -> float:
+        """
+        Derivative of the sigmoid function.
+        """
+        return x * (1 - x)
         
     def forward(self, inputs: dict) -> dict:
         """
@@ -58,15 +65,28 @@ class Network:
                 edge_inputs = [outputs[edge].item() if isinstance(outputs[edge], np.ndarray) else outputs[edge] for edge in self.edges[node_id]]
                 outputs[node_id] = neuron.activate(edge_inputs)
                 #print(f"Node {node_id} activated with inputs {edge_inputs}: output {outputs[node_id]}")
+        # Store the last outputs for backpropagation
+        self.last_outputs = outputs.copy()
         return outputs
     
     def backward(self, target: dict, learning_rate: float):
         """
         Perform a backward pass through the network.
         """
-        for node_id, neuron in self.nodes.items():
-            if node_id in target:
-                neuron.backpropogation(target[node_id], learning_rate)
+        outputs = self.last_outputs
+
+        y_o = outputs["output"]
+        delta_o = (target["output"] - y_o) * self.sigmoid_derivative(y_o)
+
+        # Update the output neuron
+        self.nodes["output"].backprop(delta_o, learning_rate)
+
+        # Update the hidden neurons
+        for i, h in enumerate(self.edges["output"]):
+            y_h = outputs[h]
+            w = self.nodes["output"].weights[i]
+            delta_h = w * delta_o * self.sigmoid_derivative(y_h)
+            self.nodes[h].backprop(delta_h, learning_rate)
 
 
 if __name__ == "__main__":
@@ -95,18 +115,22 @@ if __name__ == "__main__":
     network.backward(target, learning_rate=0.01)
     """
     losses = []
-    iterations = 10000
+    iterations = 100000
+    learning_rate = 1.0
 
     for i in range(iterations):
+        # decrease learning rate
+        learning_rate *= 0.99999
+        
         # train for xor
         inputs = {"input1": np.random.randint(0,2), "input2": np.random.randint(0,2)}
         target = {"output": int(inputs["input1"] != inputs["input2"])}
         outputs = network.forward(inputs)
         loss = sum((target[node] - outputs[node]) ** 2 for node in target)
         losses.append(loss)
-        print(f"Iteration {i+1}/{iterations}, Loss: {loss}")
+        print(f"Iteration {i+1}/{iterations}, Loss: {loss}, learning_rate: {learning_rate}")
 
-        network.backward(target, learning_rate=0.01)
+        network.backward(target, learning_rate=learning_rate)
 
     for x in [0, 1]:
         for y in [0, 1]:

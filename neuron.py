@@ -10,23 +10,24 @@ class Neuron:
         Each input has an associated weight initialized randomly.
         """
         self.weights = np.random.rand(num_inputs)
-        self.bias = np.random.rand(1) # Initialized to a random bias
+        self.bias = np.random.randn() # Initialized to a random bias
         self.output = None
         self.num_inputs = num_inputs
+        self.last_inputs = None
 
     def activate(self, inputs: np.ndarray) -> float:
         """
         Compute the output of the neuron using the sigmoid activation function.
         """
 
+        inputs = np.array(inputs, dtype=float)
+
         if len(self.weights) == 0:
             self.output = inputs
             return self.output
         
-        #inputs = np.array(inputs).flatten() # Ensure inputs are a 1D array
-    
-        #print(f"Neuron weights: {self.weights}, inputs: {inputs}, bias: {self.bias}")
-        #print(self.num_inputs)
+        self.last_inputs = inputs # Store the last inputs for backpropagation
+        
         z = np.dot(self.weights, inputs) + self.bias # Weighted sum of inputs + bias
         self.output = self.sigmoid(z)
         #print(f"Neuron activated with inputs {inputs}: weighted sum {z}, output {self.output}")
@@ -57,4 +58,11 @@ class Neuron:
         
         # Update bias
         self.bias += learning_rate * error * gradient
+
+    def backprop(self, delta: float, learning_rate: float):
+        """
+        Update the weights and bias using backpropagation.
+        """
+        self.weights += learning_rate * delta * self.last_inputs
+        self.bias += learning_rate * delta
 
