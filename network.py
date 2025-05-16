@@ -41,7 +41,7 @@ class Network:
             for j in range(num_hidden):
                 self.add_edge(f"input{i+1}", f"hidden{j+1}")
 
-        # Connect hidden nodes to output nodes
+        # Connect hidden nodes to output node
         for i in range(num_hidden):
             self.add_edge(f"hidden{i+1}", "output")
         
@@ -109,6 +109,13 @@ class Network:
             delta_h = w * delta_o * self.sigmoid_derivative(y_h)
             self.nodes[h].backprop(delta_h, learning_rate)
 
+    def predict(self, inputs: dict) -> dict:
+        """
+        Predict the output for given inputs.
+        """
+        outputs = self.forward(inputs)
+        return outputs["output"]
+
 
 if __name__ == "__main__":
     # Example usage
@@ -116,7 +123,7 @@ if __name__ == "__main__":
     network = Network()
     
     # Generate the network
-    network.generate(2, 4)
+    network.generate(2, 8)
 
     losses = []
     iterations = 1000
@@ -141,8 +148,8 @@ if __name__ == "__main__":
     # Test the network
     for x in [0, 1]:
         for y in [0, 1]:
-            output = network.forward({"input1": x, "input2": y})
-            print(f"{x} XOR {y} => {output['output']}")
+            output = network.predict({"input1": x, "input2": y})
+            print(f"{x} XOR {y} => {output}")
 
     # We plot losses to see how our network is doing
     plt.plot(losses)
