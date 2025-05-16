@@ -12,6 +12,7 @@ class Neuron:
         self.weights = np.random.rand(num_inputs)
         self.bias = np.random.rand(1) # Initialized to a random bias
         self.output = None
+        self.num_inputs = num_inputs
 
     def activate(self, inputs: np.ndarray) -> float:
         """
@@ -21,12 +22,15 @@ class Neuron:
         if len(self.weights) == 0:
             self.output = inputs
             return self.output
+        
+        #inputs = np.array(inputs).flatten() # Ensure inputs are a 1D array
     
         #print(f"Neuron weights: {self.weights}, inputs: {inputs}, bias: {self.bias}")
+        #print(self.num_inputs)
         z = np.dot(self.weights, inputs) + self.bias # Weighted sum of inputs + bias
         self.output = self.sigmoid(z)
         #print(f"Neuron activated with inputs {inputs}: weighted sum {z}, output {self.output}")
-        return self.output
+        return self.output.item()
     
     def sigmoid(self, x: float) -> float:
         """
