@@ -96,42 +96,45 @@ if __name__ == "__main__":
     network.add_node("input2", 0)
     network.add_node("hidden1", 2)
     network.add_node("hidden2", 2)
+    #network.add_node("hidden3", 2)
+    #network.add_node("hidden4", 2)
     network.add_node("output", 2)
 
     network.add_edge("input1", "hidden1")
     network.add_edge("input2", "hidden1")
     network.add_edge("input1", "hidden2")
     network.add_edge("input2", "hidden2")
+    #network.add_edge("input1", "hidden3")
+    #network.add_edge("input2", "hidden3")
+    #network.add_edge("input1", "hidden4")
+    #network.add_edge("input2", "hidden4")
     network.add_edge("hidden1", "output")
     network.add_edge("hidden2", "output")
-    """
-    inputs = {"input1": 0.5, "input2": 0.8}
-    target = {"output": 1.0}
-    print("Inputs:", inputs)
-    
-    outputs = network.forward(inputs)
-    print("Outputs:", outputs)
-    
-    network.backward(target, learning_rate=0.01)
-    """
+    #network.add_edge("hidden3", "output")
+    #network.add_edge("hidden4", "output")
+
+
     losses = []
-    iterations = 100000
+    iterations = 10000
     learning_rate = 1.0
+
+    patterns = [({"input1":0,"input2":0}, {"output":0}), ({"input1":0,"input2":1}, {"output":1}), ({"input1":1,"input2":0}, {"output":1}), ({"input1":1,"input2":1}, {"output":0})]
 
     for i in range(iterations):
         # decrease learning rate
-        learning_rate *= 0.99999
+        learning_rate *= 0.95 if i % 500 == 0 else 1
+        # shuffle patterns
+        np.random.shuffle(patterns)
+        for inputs, target in patterns:
+            # train for xor
+            outputs = network.forward(inputs)
+            
+            loss = sum((target[node] - outputs[node]) ** 2 for node in target) # Mean Squared Error Loss
+            losses.append(loss)
+            print(f"Iteration {i+1}/{iterations}, Loss: {loss}, learning_rate: {learning_rate}")
+            network.backward(target, learning_rate=learning_rate)
 
-        # train for xor
-        inputs = {"input1": np.random.randint(0,2), "input2": np.random.randint(0,2)}
-        target = {"output": int(inputs["input1"] != inputs["input2"])}
-        outputs = network.forward(inputs)
-        loss = sum((target[node] - outputs[node]) ** 2 for node in target) # Mean Squared Error loss
-        losses.append(loss)
-        print(f"Iteration {i+1}/{iterations}, Loss: {loss}, learning_rate: {learning_rate}")
-
-        network.backward(target, learning_rate=learning_rate)
-
+    # Test the network
     for x in [0, 1]:
         for y in [0, 1]:
             output = network.forward({"input1": x, "input2": y})

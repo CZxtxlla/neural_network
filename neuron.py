@@ -9,6 +9,9 @@ class Neuron:
         Initialize the neuron with a given number of inputs.
         Each input has an associated weight initialized randomly.
         """
+        #limit = np.sqrt(6 / (num_inputs + 1))
+        #self.weights = np.random.uniform(-limit, limit, size=(num_inputs,))
+        #self.bias    = 0.0
         self.weights = np.random.rand(num_inputs)
         self.bias = np.random.randn() # Initialized to a random bias
         self.output = None
@@ -44,6 +47,18 @@ class Neuron:
         Derivative of the sigmoid function.
         """
         return x * (1 - x)
+    
+    def linear(self, x: float) -> float:
+        """
+        Linear activation function.
+        """
+        return x
+    
+    def linear_derivative(self, x: float) -> float:
+        """
+        Derivative of the linear function.
+        """
+        return 1.0
     
     def backpropogation(self, target: float, learning_rate: float):
         """
