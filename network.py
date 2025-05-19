@@ -115,43 +115,66 @@ class Network:
         """
         outputs = self.forward(inputs)
         return outputs["output"]
+    
+    def train(self, patterns: list, iterations: int, learning_rate: float):
+        """
+        Train the network using the given patterns.
+        """
+        losses = []
+        required_iterations = 0
+
+        for i in range(iterations):
+            # decrease learning rate
+            learning_rate *= 0.95 if i % 500 == 0 else 1
+            # shuffle patterns
+            np.random.shuffle(patterns)
+            temp_losses = []
+            for inputs, target in patterns:
+                # train for xor
+                outputs = self.forward(inputs)
+                
+                loss = sum((target[node] - outputs[node]) ** 2 for node in target)
+                temp_losses.append(loss)
+                losses.append(loss)
+                #print(f"Iteration {i+1}/{iterations}, Loss: {loss}, learning_rate: {learning_rate}")
+                self.backward(target, learning_rate=learning_rate)
+            for x in temp_losses:
+                if x > 0.01:
+                    required_iterations += 1
+                    break
+        print(f"Required iterations: {required_iterations}")
+        return losses, required_iterations
 
 
 if __name__ == "__main__":
-    # Example usage
+    average_required = 0
+    for i in range(50):
 
-    network = Network()
+        # Create network
+        network = Network()
+        network.generate(2, 8)
+
+        # Parameters for training
+        iterations = 1000
+        learning_rate = 1.0
+        patterns = [({"input1":0,"input2":0}, {"output":0}), ({"input1":0,"input2":1}, {"output":1}), ({"input1":1,"input2":0}, {"output":1}), ({"input1":1,"input2":1}, {"output":0})]
+
+        # Train network
+        train = network.train(patterns, iterations, learning_rate)
+        losses = train[0]
+        required_iterations = train[1]
+        average_required += required_iterations
+    average_required /= 50
+    print(f"Average required iterations: {average_required}")
+
     
-    # Generate the network
-    network.generate(2, 8)
-
-    losses = []
-    iterations = 1000
-    learning_rate = 1.0
-
-    patterns = [({"input1":0,"input2":0}, {"output":0}), ({"input1":0,"input2":1}, {"output":1}), ({"input1":1,"input2":0}, {"output":1}), ({"input1":1,"input2":1}, {"output":0})]
-
-    for i in range(iterations):
-        # decrease learning rate
-        learning_rate *= 0.95 if i % 500 == 0 else 1
-        # shuffle patterns
-        np.random.shuffle(patterns)
-        for inputs, target in patterns:
-            # train for xor
-            outputs = network.forward(inputs)
-            
-            loss = sum((target[node] - outputs[node]) ** 2 for node in target) # Mean Squared Error Loss
-            losses.append(loss)
-            print(f"Iteration {i+1}/{iterations}, Loss: {loss}, learning_rate: {learning_rate}")
-            network.backward(target, learning_rate=learning_rate)
-
-    # Test the network
+    # Test network
     for x in [0, 1]:
         for y in [0, 1]:
             output = network.predict({"input1": x, "input2": y})
             print(f"{x} XOR {y} => {output}")
 
-    # We plot losses to see how our network is doing
+    # Plot losses to see how network performs
     plt.plot(losses)
     plt.xlabel("EPOCHS")
     plt.ylabel("Loss value")
